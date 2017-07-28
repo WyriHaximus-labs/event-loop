@@ -24,9 +24,11 @@ final class Factory
     public static function create()
     {
         // @codeCoverageIgnoreStart
-        if (\class_exists('libev\EventLoop', false)) {
-            return new ExtLibevLoop();
-        } elseif (\class_exists('EvLoop', false)) {
+        if (function_exists('uv_default_loop')) {
+            return new LibUvLoop();
+        } elseif (class_exists('libev\EventLoop', false)) {
+            return new LibEvLoop;
+        } elseif (class_exists('EvLoop', false)) {
             return new ExtEvLoop();
         } elseif (\class_exists('EventBase', false)) {
             return new ExtEventLoop();

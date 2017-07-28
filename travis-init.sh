@@ -42,4 +42,17 @@ if [[ "$TRAVIS_PHP_VERSION" != "hhvm" &&
         echo "extension=libev.so" >> "$(php -r 'echo php_ini_loaded_file();')"
     fi
 
+    # install 'libuv' PHP extension (does not support php 5)
+    if [[ "$TRAVIS_PHP_VERSION" = "7.0" ||
+          "$TRAVIS_PHP_VERSION" = "7.1" ]]; then
+        git clone --recursive https://github.com/bwoebi/php-uv
+        pushd php-uv
+        phpize
+        ./configure
+        make
+        make install
+        popd
+        echo "extension=uv.so" >> "$(php -r 'echo php_ini_loaded_file();')"
+    fi
+
 fi
