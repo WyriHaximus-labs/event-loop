@@ -217,25 +217,25 @@ class LibUvLoop implements LoopInterface
     private function addStream($stream)
     {
         // Run in tick or else things epically fail with loop->watchers[w->fd] == w
-        $this->futureTick(function () use ($stream) {
+        //$this->futureTick(function () use ($stream) {
             if (!isset($this->events[(int) $stream])) {
                 $this->events[(int) $stream] = \uv_poll_init_socket($this->uv, $stream);
             }
 
             $this->pollStream($stream);
-        });
+        //});
     }
 
     private function removeStream($stream)
     {
         // Run in tick or else things epically fail with loop->watchers[w->fd] == w
-        $this->futureTick(function () use ($stream) {
+        //$this->futureTick(function () use ($stream) {
             if (!isset($this->events[(int) $stream])) {
                 return;
             }
 
             if (!isset($this->listeners[(int) $stream]['read'])
-            && !isset($this->listeners[(int) $stream]['write'])) {
+                && !isset($this->listeners[(int) $stream]['write'])) {
                 \uv_poll_stop($this->events[(int) $stream]);
                 unset($this->events[(int) $stream]);
                 unset($this->flags[(int) $stream]);
@@ -243,7 +243,7 @@ class LibUvLoop implements LoopInterface
             }
 
             $this->pollStream($stream);
-        });
+        //});
     }
 
     private function pollStream($stream)
