@@ -27,7 +27,6 @@ addons:
   apt:
     packages:
       - libevent-dev # Used by 'event' and 'libevent' PHP extensions
-      - libuv-dev # Used by 'uv' PHP extensions
 
 cache:
   directories:
