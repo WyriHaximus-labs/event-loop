@@ -66,7 +66,7 @@ class LibUvLoop implements LoopInterface
 
         unset($this->listeners[(int) $stream]['read']);
 
-        $this->____removeStream($stream);
+        $this->removeStream($stream);
     }
 
     /**
@@ -80,20 +80,7 @@ class LibUvLoop implements LoopInterface
 
         unset($this->listeners[(int) $stream]['write']);
 
-        $this->____removeStream($stream);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function removeStream($stream)
-    {
-        if (isset($this->events[(int) $stream])) {
-            unset($this->listeners[(int) $stream]['read']);
-            unset($this->listeners[(int) $stream]['write']);
-
-            $this->____removeStream($stream);
-        }
+        $this->removeStream($stream);
     }
 
     /**
@@ -211,8 +198,7 @@ class LibUvLoop implements LoopInterface
         });
     }
 
-    // To do: get latest changes in from react:master so we can use this method name internally
-    private function ____removeStream($stream)
+    private function removeStream($stream)
     {
         // Run in tick or else things epically fail with loop->watchers[w->fd] == w
         $this->futureTick(function () use ($stream) {
