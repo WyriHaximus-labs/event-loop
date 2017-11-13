@@ -19,6 +19,8 @@ class LibUvLoop implements LoopInterface
     private $flags = [];
     private $listeners = [];
     private $running;
+    private $signals;
+    private $signalEvents = [];
     private $streamListener;
 
     public function __construct()
@@ -27,6 +29,22 @@ class LibUvLoop implements LoopInterface
         $this->futureTickQueue = new FutureTickQueue();
         $this->timerEvents = new SplObjectStorage();
         $this->streamListener = $this->createStreamListener();
+
+        $this->signals = new SignalsHandler(
+            $this,
+            function ($signal) {
+                $this->signalEvents[$signal] = \uv_signal_init($this->uv);
+                \uv_signal_start($this->signalEvents[$signal], function () use ($signal) {
+                    $this->signals->call($signal);
+                }, $signal);
+            },
+            function ($signal) {
+                if ($this->signals->count($signal) === 0) {
+                    \uv_signal_stop($this->signalEvents[$signal]);
+                    unset($this->signalEvents[$signal]);
+                }
+            }
+        );
     }
 
     /**
@@ -158,6 +176,16 @@ class LibUvLoop implements LoopInterface
     public function futureTick(callable $listener)
     {
         $this->futureTickQueue->add($listener);
+    }
+
+    public function addSignal($signal, callable $listener)
+    {
+        $this->signals->add($signal, $listener);
+    }
+
+    public function removeSignal($signal, callable $listener)
+    {
+        $this->signals->remove($signal, $listener);
     }
 
     /**
