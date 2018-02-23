@@ -147,14 +147,6 @@ final class LibUvLoop implements LoopInterface
     /**
      * {@inheritdoc}
      */
-    public function isTimerActive(TimerInterface $timer)
-    {
-        return $this->timerEvents->contains($timer);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function futureTick($listener)
     {
         $this->futureTickQueue->add($listener);
