@@ -4,7 +4,6 @@ namespace React\EventLoop;
 
 use React\EventLoop\Tick\FutureTickQueue;
 use React\EventLoop\Timer\Timer;
-use React\EventLoop\Timer\TimerInterface;
 use SplObjectStorage;
 
 /**
@@ -15,12 +14,12 @@ class LibUvLoop implements LoopInterface
     private $uv;
     private $futureTickQueue;
     private $timerEvents;
-    private $events = [];
-    private $flags = [];
-    private $listeners = [];
+    private $events = array();
+    private $flags = array();
+    private $listeners = array();
     private $running;
     private $signals;
-    private $signalEvents = [];
+    private $signalEvents = array();
     private $streamListener;
 
     public function __construct()
@@ -30,27 +29,13 @@ class LibUvLoop implements LoopInterface
         $this->timerEvents = new SplObjectStorage();
         $this->streamListener = $this->createStreamListener();
 
-        $this->signals = new SignalsHandler(
-            $this,
-            function ($signal) {
-                $this->signalEvents[$signal] = \uv_signal_init($this->uv);
-                \uv_signal_start($this->signalEvents[$signal], function () use ($signal) {
-                    $this->signals->call($signal);
-                }, $signal);
-            },
-            function ($signal) {
-                if ($this->signals->count($signal) === 0) {
-                    \uv_signal_stop($this->signalEvents[$signal]);
-                    unset($this->signalEvents[$signal]);
-                }
-            }
-        );
+        $this->signals = new SignalsHandler();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function addReadStream($stream, callable $listener)
+    public function addReadStream($stream, $listener)
     {
         if (isset($this->listeners[(int) $stream]['read'])) {
             return;
@@ -63,7 +48,7 @@ class LibUvLoop implements LoopInterface
     /**
      * {@inheritdoc}
      */
-    public function addWriteStream($stream, callable $listener)
+    public function addWriteStream($stream, $listener)
     {
         if (isset($this->listeners[(int) $stream]['write'])) {
             return;
@@ -104,7 +89,7 @@ class LibUvLoop implements LoopInterface
     /**
      * {@inheritdoc}
      */
-    public function addTimer($interval, callable $callback)
+    public function addTimer($interval, $callback)
     {
         $timer = new Timer( $interval, $callback, false);
 
@@ -120,7 +105,7 @@ class LibUvLoop implements LoopInterface
         $this->timerEvents->attach($timer, $event);
         \uv_timer_start(
             $event,
-            $interval * 1000,
+            (int)($interval * 1000),
             0,
             $callback
         );
@@ -131,7 +116,7 @@ class LibUvLoop implements LoopInterface
     /**
      * {@inheritdoc}
      */
-    public function addPeriodicTimer($interval, callable $callback)
+    public function addPeriodicTimer($interval, $callback)
     {
         $timer = new Timer($interval, $callback, true);
 
@@ -173,19 +158,32 @@ class LibUvLoop implements LoopInterface
     /**
      * {@inheritdoc}
      */
-    public function futureTick(callable $listener)
+    public function futureTick($listener)
     {
         $this->futureTickQueue->add($listener);
     }
 
-    public function addSignal($signal, callable $listener)
+    public function addSignal($signal, $listener)
     {
         $this->signals->add($signal, $listener);
+
+        if (!isset($this->signalEvents[$signal])) {
+            $signals = $this->signals;
+            $this->signalEvents[$signal] = \uv_signal_init($this->uv);
+            \uv_signal_start($this->signalEvents[$signal], function () use ($signals, $signal) {
+                $signals->call($signal);
+            }, $signal);
+        }
     }
 
-    public function removeSignal($signal, callable $listener)
+    public function removeSignal($signal, $listener)
     {
         $this->signals->remove($signal, $listener);
+
+        if (isset($this->signalEvents[$signal]) && $this->signals->count($signal) === 0) {
+            \uv_signal_stop($this->signalEvents[$signal]);
+            unset($this->signalEvents[$signal]);
+        }
     }
 
     /**
