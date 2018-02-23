@@ -28,7 +28,6 @@ class LibUvLoop implements LoopInterface
         $this->futureTickQueue = new FutureTickQueue();
         $this->timerEvents = new SplObjectStorage();
         $this->streamListener = $this->createStreamListener();
-
         $this->signals = new SignalsHandler();
     }
 
@@ -68,7 +67,6 @@ class LibUvLoop implements LoopInterface
         }
 
         unset($this->listeners[(int) $stream]['read']);
-
         $this->removeStream($stream);
     }
 
@@ -82,7 +80,6 @@ class LibUvLoop implements LoopInterface
         }
 
         unset($this->listeners[(int) $stream]['write']);
-
         $this->removeStream($stream);
     }
 
