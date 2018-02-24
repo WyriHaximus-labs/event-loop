@@ -14,7 +14,7 @@ final class LibUvLoop implements LoopInterface
     private $uv;
     private $futureTickQueue;
     private $timerEvents;
-    private $events = array();
+    private $streamEvents = array();
     private $flags = array();
     private $listeners = array();
     private $running;
@@ -62,7 +62,7 @@ final class LibUvLoop implements LoopInterface
      */
     public function removeReadStream($stream)
     {
-        if (!isset($this->events[(int) $stream])) {
+        if (!isset($this->streamEvents[(int) $stream])) {
             return;
         }
 
@@ -75,7 +75,7 @@ final class LibUvLoop implements LoopInterface
      */
     public function removeWriteStream($stream)
     {
-        if (!isset($this->events[(int) $stream])) {
+        if (!isset($this->streamEvents[(int) $stream])) {
             return;
         }
 
@@ -187,7 +187,7 @@ final class LibUvLoop implements LoopInterface
         while ($this->running) {
             $this->futureTickQueue->tick();
 
-            if ($this->futureTickQueue->isEmpty() && empty($this->events) && $this->timerEvents->count() === 0) {
+            if ($this->futureTickQueue->isEmpty() && empty($this->streamEvents) && $this->timerEvents->count() === 0) {
                 break;
             }
 
@@ -205,8 +205,8 @@ final class LibUvLoop implements LoopInterface
 
     private function addStream($stream)
     {
-        if (!isset($this->events[(int) $stream])) {
-            $this->events[(int) $stream] = \uv_poll_init_socket($this->uv, $stream);
+        if (!isset($this->streamEvents[(int) $stream])) {
+            $this->streamEvents[(int) $stream] = \uv_poll_init_socket($this->uv, $stream);
         }
 
         // Run in tick or else things epically fail with loop->watchers[w->fd] == w
@@ -217,14 +217,14 @@ final class LibUvLoop implements LoopInterface
 
     private function removeStream($stream)
     {
-        if (!isset($this->events[(int) $stream])) {
+        if (!isset($this->streamEvents[(int) $stream])) {
             return;
         }
 
         if (!isset($this->listeners[(int) $stream]['read'])
             && !isset($this->listeners[(int) $stream]['write'])) {
-            \uv_poll_stop($this->events[(int) $stream]);
-            unset($this->events[(int) $stream]);
+            \uv_poll_stop($this->streamEvents[(int) $stream]);
+            unset($this->streamEvents[(int) $stream]);
             unset($this->flags[(int) $stream]);
             return;
         }
@@ -237,7 +237,7 @@ final class LibUvLoop implements LoopInterface
 
     private function pollStream($stream)
     {
-        if (!isset($this->events[(int) $stream])) {
+        if (!isset($this->streamEvents[(int) $stream])) {
             return;
         }
 
@@ -256,7 +256,7 @@ final class LibUvLoop implements LoopInterface
 
         $this->flags[(int) $stream] = $flags;
 
-        \uv_poll_start($this->events[(int) $stream], $flags, $this->streamListener);
+        \uv_poll_start($this->streamEvents[(int) $stream], $flags, $this->streamListener);
     }
 
     /**
