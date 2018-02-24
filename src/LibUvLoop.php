@@ -191,7 +191,10 @@ final class LibUvLoop implements LoopInterface
                 break;
             }
 
-            \uv_run($this->uv, \UV::RUN_NOWAIT);
+            // Use UV::RUN_ONCE when there are only I/O events active in the loop and block until one of those triggers,
+            // otherwise use UV::RUN_NOWAIT.
+            // @link http://docs.libuv.org/en/v1.x/loop.html#c.uv_run
+            \uv_run($this->uv, $this->futureTickQueue->isEmpty() && $this->timerEvents->count() === 0 ? \UV::RUN_ONCE : \UV::RUN_NOWAIT);
         }
     }
 
