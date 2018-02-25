@@ -28,7 +28,7 @@ final class Factory
             // only use ext-uv on PHP 7
             return new LibUvLoop();
         } elseif (class_exists('libev\EventLoop', false)) {
-            return new LibEvLoop;
+            return new ExtLibevLoop;
         } elseif (class_exists('EvLoop', false)) {
             return new ExtEvLoop();
         } elseif (\class_exists('EventBase', false)) {
