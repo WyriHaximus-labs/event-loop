@@ -24,9 +24,8 @@ final class Factory
     public static function create()
     {
         // @codeCoverageIgnoreStart
-        $isPHPSeven = PHP_VERSION_ID >= 70000;
-
-        if (function_exists('uv_default_loop') && $isPHPSeven) {
+        if (function_exists('uv_default_loop') && PHP_MAJOR_VERSION === 7) {
+            // only use ext-uv on PHP 7
             return new LibUvLoop();
         } elseif (class_exists('libev\EventLoop', false)) {
             return new LibEvLoop;
@@ -34,8 +33,8 @@ final class Factory
             return new ExtEvLoop();
         } elseif (\class_exists('EventBase', false)) {
             return new ExtEventLoop();
-        } elseif (function_exists('event_base_new') && !$isPHPSeven) {
-            // only use ext-libevent on PHP < 7 for now
+        } elseif (function_exists('event_base_new') && PHP_MAJOR_VERSION === 5) {
+            // only use ext-libevent on PHP 5 for now
             return new ExtLibeventLoop();
         }
 
