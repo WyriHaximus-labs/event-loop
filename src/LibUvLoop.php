@@ -24,6 +24,10 @@ final class LibUvLoop implements LoopInterface
 
     public function __construct()
     {
+        if (!function_exists('uv_loop_new')) {
+            throw new BadMethodCallException('Cannot create LibUvLoop, ext-uv extension missing');
+        }
+
         $this->uv = \uv_loop_new();
         $this->futureTickQueue = new FutureTickQueue();
         $this->timerEvents = new SplObjectStorage();
