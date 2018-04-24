@@ -26,7 +26,7 @@ final class Factory
         // @codeCoverageIgnoreStart
         if (function_exists('uv_default_loop') && PHP_MAJOR_VERSION === 7) {
             // only use ext-uv on PHP 7
-            return new LibUvLoop();
+            return new ExtUvLoop();
         } elseif (class_exists('libev\EventLoop', false)) {
             return new ExtLibevLoop();
         } elseif (class_exists('EvLoop', false)) {

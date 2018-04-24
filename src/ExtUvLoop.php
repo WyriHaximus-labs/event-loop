@@ -9,7 +9,7 @@ use SplObjectStorage;
 /**
  * @see https://github.com/bwoebi/php-uv
  */
-final class LibUvLoop implements LoopInterface
+final class ExtUvLoop implements LoopInterface
 {
     private $uv;
     private $futureTickQueue;

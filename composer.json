@@ -12,7 +12,7 @@
     "suggest": {
         "ext-event": "~1.0 for ExtEventLoop",
         "ext-pcntl": "For signal handling support when using the StreamSelectLoop",
-        "ext-libuv": "* for LibUvLoop"
+        "ext-uv": "* for ExtUvLoop"
     },
     "autoload": {
         "psr-4": {
