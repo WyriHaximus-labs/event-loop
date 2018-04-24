@@ -24,7 +24,7 @@ final class Factory
     public static function create()
     {
         // @codeCoverageIgnoreStart
-        if (function_exists('uv_default_loop') && PHP_MAJOR_VERSION === 7) {
+        if (function_exists('uv_loop_new') && PHP_MAJOR_VERSION === 7) {
             // only use ext-uv on PHP 7
             return new ExtUvLoop();
         } elseif (class_exists('libev\EventLoop', false)) {
