@@ -557,7 +557,7 @@ abstract class AbstractLoopTest extends TestCase
         $loop = $this->loop;
         $function = function () {};
         $this->loop->addSignal(SIGUSR1, $function);
-        $this->loop->addTimer(1.6, function () use ($function, $loop) {
+        $this->loop->addTimer(1.5, function () use ($function, $loop) {
             $loop->removeSignal(SIGUSR1, $function);
         });
 
