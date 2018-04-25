@@ -108,7 +108,7 @@ final class ExtUvLoop implements LoopInterface
         $this->timerEvents->attach($timer, $event);
         \uv_timer_start(
             $event,
-            (int)($interval * 1000),
+            (int)ceil($interval * 1000),
             0,
             $callback
         );
@@ -131,8 +131,8 @@ final class ExtUvLoop implements LoopInterface
         $this->timerEvents->attach($timer, $event);
         \uv_timer_start(
             $event,
-            $interval * 1000,
-            $interval * 1000,
+            (int)ceil($interval * 1000),
+            (int)ceil($interval * 1000),
             $callback
         );
 
