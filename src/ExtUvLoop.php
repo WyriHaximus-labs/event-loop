@@ -16,7 +16,8 @@ final class ExtUvLoop implements LoopInterface
     private $timerEvents;
     private $streamEvents = array();
     private $flags = array();
-    private $listeners = array();
+    private $readStreams = array();
+    private $writeStreams = array();
     private $running;
     private $signals;
     private $signalEvents = array();
@@ -40,11 +41,11 @@ final class ExtUvLoop implements LoopInterface
      */
     public function addReadStream($stream, $listener)
     {
-        if (isset($this->listeners[(int) $stream]['read'])) {
+        if (isset($this->readStreams[(int) $stream])) {
             return;
         }
 
-        $this->listeners[(int) $stream]['read'] = $listener;
+        $this->readStreams[(int) $stream] = $listener;
         $this->addStream($stream);
     }
 
@@ -53,11 +54,11 @@ final class ExtUvLoop implements LoopInterface
      */
     public function addWriteStream($stream, $listener)
     {
-        if (isset($this->listeners[(int) $stream]['write'])) {
+        if (isset($this->writeStreams[(int) $stream])) {
             return;
         }
 
-        $this->listeners[(int) $stream]['write'] = $listener;
+        $this->writeStreams[(int) $stream] = $listener;
         $this->addStream($stream);
     }
 
@@ -70,7 +71,7 @@ final class ExtUvLoop implements LoopInterface
             return;
         }
 
-        unset($this->listeners[(int) $stream]['read']);
+        unset($this->readStreams[(int) $stream]);
         $this->removeStream($stream);
     }
 
@@ -83,7 +84,7 @@ final class ExtUvLoop implements LoopInterface
             return;
         }
 
-        unset($this->listeners[(int) $stream]['write']);
+        unset($this->writeStreams[(int) $stream]);
         $this->removeStream($stream);
     }
 
@@ -228,8 +229,8 @@ final class ExtUvLoop implements LoopInterface
             return;
         }
 
-        if (!isset($this->listeners[(int) $stream]['read'])
-            && !isset($this->listeners[(int) $stream]['write'])) {
+        if (!isset($this->readStreams[(int) $stream])
+            && !isset($this->writeStreams[(int) $stream])) {
             \uv_poll_stop($this->streamEvents[(int) $stream]);
             unset($this->streamEvents[(int) $stream]);
             unset($this->flags[(int) $stream]);
@@ -249,11 +250,11 @@ final class ExtUvLoop implements LoopInterface
         }
 
         $flags = 0;
-        if (isset($this->listeners[(int) $stream]['read'])) {
+        if (isset($this->readStreams[(int) $stream])) {
             $flags |= \UV::READABLE;
         }
 
-        if (isset($this->listeners[(int) $stream]['write'])) {
+        if (isset($this->writeStreams[(int) $stream])) {
             $flags |= \UV::WRITABLE;
         }
 
@@ -279,12 +280,12 @@ final class ExtUvLoop implements LoopInterface
                 $this->pollStream($stream);
             }
 
-            if (isset($this->listeners[(int) $stream]['read']) && ($events & \UV::READABLE)) {
-                call_user_func($this->listeners[(int) $stream]['read'], $stream);
+            if (isset($this->readStreams[(int) $stream]) && ($events & \UV::READABLE)) {
+                call_user_func($this->readStreams[(int) $stream], $stream);
             }
 
-            if (isset($this->listeners[(int) $stream]['write']) && ($events & \UV::WRITABLE)) {
-                call_user_func($this->listeners[(int) $stream]['write'], $stream);
+            if (isset($this->writeStreams[(int) $stream]) && ($events & \UV::WRITABLE)) {
+                call_user_func($this->writeStreams[(int) $stream], $stream);
             }
         };
 
