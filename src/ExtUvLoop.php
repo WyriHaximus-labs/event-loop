@@ -13,7 +13,7 @@ final class ExtUvLoop implements LoopInterface
 {
     private $uv;
     private $futureTickQueue;
-    private $timerEvents;
+    private $timers;
     private $streamEvents = array();
     private $flags = array();
     private $readStreams = array();
@@ -31,7 +31,7 @@ final class ExtUvLoop implements LoopInterface
 
         $this->uv = \uv_loop_new();
         $this->futureTickQueue = new FutureTickQueue();
-        $this->timerEvents = new SplObjectStorage();
+        $this->timers = new SplObjectStorage();
         $this->streamListener = $this->createStreamListener();
         $this->signals = new SignalsHandler();
     }
@@ -96,7 +96,7 @@ final class ExtUvLoop implements LoopInterface
         $timer = new Timer( $interval, $callback, false);
 
         $that = $this;
-        $timers = $this->timerEvents;
+        $timers = $this->timers;
         $callback = function () use ($timer, $timers, $that) {
             call_user_func($timer->getCallback(), $timer);
 
@@ -106,7 +106,7 @@ final class ExtUvLoop implements LoopInterface
         };
 
         $event = \uv_timer_init($this->uv);
-        $this->timerEvents->attach($timer, $event);
+        $this->timers->attach($timer, $event);
         \uv_timer_start(
             $event,
             (int)ceil($interval * 1000),
@@ -129,7 +129,7 @@ final class ExtUvLoop implements LoopInterface
         };
 
         $event = \uv_timer_init($this->uv);
-        $this->timerEvents->attach($timer, $event);
+        $this->timers->attach($timer, $event);
         \uv_timer_start(
             $event,
             (int)ceil($interval * 1000),
@@ -145,9 +145,9 @@ final class ExtUvLoop implements LoopInterface
      */
     public function cancelTimer(TimerInterface $timer)
     {
-        if (isset($this->timerEvents[$timer])) {
-            @\uv_timer_stop($this->timerEvents[$timer]);
-            $this->timerEvents->detach($timer);
+        if (isset($this->timers[$timer])) {
+            @\uv_timer_stop($this->timers[$timer]);
+            $this->timers->detach($timer);
         }
     }
 
@@ -192,14 +192,24 @@ final class ExtUvLoop implements LoopInterface
         while ($this->running) {
             $this->futureTickQueue->tick();
 
-            if ($this->futureTickQueue->isEmpty() && empty($this->streamEvents) && $this->timerEvents->count() === 0) {
-                break;
-            }
+            $hasPendingCallbacks = !$this->futureTickQueue->isEmpty();
+            $wasJustStopped = !$this->running;
+            $nothingLeftToDo = !$this->readStreams
+                && !$this->writeStreams
+                && !$this->timers->count()
+                && $this->signals->isEmpty();
 
             // Use UV::RUN_ONCE when there are only I/O events active in the loop and block until one of those triggers,
             // otherwise use UV::RUN_NOWAIT.
             // @link http://docs.libuv.org/en/v1.x/loop.html#c.uv_run
-            \uv_run($this->uv, $this->futureTickQueue->isEmpty() && $this->timerEvents->count() === 0 ? \UV::RUN_ONCE : \UV::RUN_NOWAIT);
+            $flags = \UV::RUN_ONCE;
+            if ($wasJustStopped || $hasPendingCallbacks) {
+                $flags = \UV::RUN_NOWAIT;
+            } elseif ($nothingLeftToDo) {
+                break;
+            }
+
+            \uv_run($this->uv, $flags);
         }
     }
 
