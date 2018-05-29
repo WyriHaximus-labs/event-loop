@@ -46,14 +46,7 @@ if [[ "$TRAVIS_PHP_VERSION" != "hhvm" &&
     if [[ "$TRAVIS_PHP_VERSION" = "7.0" ||
           "$TRAVIS_PHP_VERSION" = "7.1" ||
           "$TRAVIS_PHP_VERSION" = "7.2" ]]; then
-        git clone --recursive https://github.com/bwoebi/php-uv
-        pushd php-uv
-        phpize
-        ./configure
-        make
-        make install
-        popd
-        echo "extension=uv.so" >> "$(php -r 'echo php_ini_loaded_file();')"
+        echo "yes" | pecl install uv
     fi
 
 fi
