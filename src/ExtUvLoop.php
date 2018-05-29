@@ -7,6 +7,13 @@ use React\EventLoop\Timer\Timer;
 use SplObjectStorage;
 
 /**
+ * An `ext-uv` based event loop.
+ *
+ * This loop uses the [`uv` PECL extension](https://pecl.php.net/package/uv),
+ * that provides an interface to `libuv` library.
+ *
+ * This loop is known to work with PHP 7+.
+ *
  * @see https://github.com/bwoebi/php-uv
  */
 final class ExtUvLoop implements LoopInterface
