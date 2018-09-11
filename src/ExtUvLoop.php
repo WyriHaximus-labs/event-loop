@@ -235,9 +235,9 @@ final class ExtUvLoop implements LoopInterface
         }
 
         // Run in tick or else things epically fail with loop->watchers[w->fd] == w
-        $this->futureTick(function () use ($stream) {
+        //$this->futureTick(function () use ($stream) {
             $this->pollStream($stream);
-        });
+        //});
     }
 
     private function removeStream($stream)
@@ -255,9 +255,9 @@ final class ExtUvLoop implements LoopInterface
         }
 
         // Run in tick or else things epically fail with loop->watchers[w->fd] == w
-        $this->futureTick(function () use ($stream) {
+        //$this->futureTick(function () use ($stream) {
             $this->pollStream($stream);
-        });
+        //});
     }
 
     private function pollStream($stream)
