@@ -22,7 +22,6 @@ final class ExtUvLoop implements LoopInterface
     private $futureTickQueue;
     private $timers;
     private $streamEvents = array();
-    private $flags = array();
     private $readStreams = array();
     private $writeStreams = array();
     private $running;
@@ -248,7 +247,6 @@ final class ExtUvLoop implements LoopInterface
             \uv_poll_stop($this->streamEvents[(int) $stream]);
             \uv_close($this->streamEvents[(int) $stream]);
             unset($this->streamEvents[(int) $stream]);
-            unset($this->flags[(int) $stream]);
             return;
         }
 
@@ -270,12 +268,6 @@ final class ExtUvLoop implements LoopInterface
             $flags |= \UV::WRITABLE;
         }
 
-        if (isset($this->flags[(int) $stream]) && $this->flags[(int) $stream] == $flags) {
-            return;
-        }
-
-        $this->flags[(int) $stream] = $flags;
-
         \uv_poll_start($this->streamEvents[(int) $stream], $flags, $this->streamListener);
     }
 
@@ -288,7 +280,6 @@ final class ExtUvLoop implements LoopInterface
     {
         $callback = function ($event, $status, $events, $stream) {
             if ($status !== 0) {
-                unset($this->flags[(int) $stream]);
                 $this->pollStream($stream);
             }
 
