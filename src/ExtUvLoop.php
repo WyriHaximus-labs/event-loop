@@ -43,6 +43,18 @@ final class ExtUvLoop implements LoopInterface
     }
 
     /**
+     * Returns the underlying ext-uv event loop. (Internal ReactPHP use only.)
+     *
+     * @internal
+     *
+     * @return resource
+     */
+    public function getUvLoop()
+    {
+        return $this->uv;
+    }
+
+    /**
      * {@inheritdoc}
      */
     public function addReadStream($stream, $listener)
