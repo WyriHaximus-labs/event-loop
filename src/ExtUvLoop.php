@@ -32,7 +32,7 @@ final class ExtUvLoop implements LoopInterface
     public function __construct()
     {
         if (!function_exists('uv_loop_new')) {
-            throw new BadMethodCallException('Cannot create LibUvLoop, ext-uv extension missing');
+            throw new \BadMethodCallException('Cannot create LibUvLoop, ext-uv extension missing');
         }
 
         $this->uv = \uv_loop_new();
@@ -116,7 +116,7 @@ final class ExtUvLoop implements LoopInterface
         $that = $this;
         $timers = $this->timers;
         $callback = function () use ($timer, $timers, $that) {
-            call_user_func($timer->getCallback(), $timer);
+            \call_user_func($timer->getCallback(), $timer);
 
             if ($timers->contains($timer)) {
                 $that->cancelTimer($timer);
@@ -143,7 +143,7 @@ final class ExtUvLoop implements LoopInterface
         $timer = new Timer($interval, $callback, true);
 
         $callback = function () use ($timer) {
-            call_user_func($timer->getCallback(), $timer);
+            \call_user_func($timer->getCallback(), $timer);
         };
 
         $event = \uv_timer_init($this->uv);
@@ -242,10 +242,12 @@ final class ExtUvLoop implements LoopInterface
     private function addStream($stream)
     {
         if (!isset($this->streamEvents[(int) $stream])) {
-            $this->streamEvents[(int) $stream] = \uv_poll_init_socket($this->uv, $stream);
+            $this->streamEvents[(int)$stream] = \uv_poll_init_socket($this->uv, $stream);
         }
 
-        $this->pollStream($stream);
+        if ($this->streamEvents[(int) $stream] !== false) {
+            $this->pollStream($stream);
+        }
     }
 
     private function removeStream($stream)
@@ -291,16 +293,25 @@ final class ExtUvLoop implements LoopInterface
     private function createStreamListener()
     {
         $callback = function ($event, $status, $events, $stream) {
+            if (!isset($this->streamEvents[(int) $stream])) {
+                return;
+            }
+
+            if (($events | 4) === 4) {
+                // Disconnected
+                return;
+            }
+
             if ($status !== 0) {
                 $this->pollStream($stream);
             }
 
             if (isset($this->readStreams[(int) $stream]) && ($events & \UV::READABLE)) {
-                call_user_func($this->readStreams[(int) $stream], $stream);
+                \call_user_func($this->readStreams[(int) $stream], $stream);
             }
 
             if (isset($this->writeStreams[(int) $stream]) && ($events & \UV::WRITABLE)) {
-                call_user_func($this->writeStreams[(int) $stream], $stream);
+                \call_user_func($this->writeStreams[(int) $stream], $stream);
             }
         };
 
