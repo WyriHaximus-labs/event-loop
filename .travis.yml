@@ -43,4 +43,3 @@ install:
 
 script:
   - ./vendor/bin/phpunit --coverage-text
-  - php examples/14-http-client-async.php
