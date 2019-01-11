@@ -46,7 +46,7 @@ if [[ "$TRAVIS_PHP_VERSION" != "hhvm" &&
     if [[ "$TRAVIS_PHP_VERSION" = "7.0" ||
           "$TRAVIS_PHP_VERSION" = "7.1" ||
           "$TRAVIS_PHP_VERSION" = "7.2" ]]; then
-        echo "yes" | pecl install "channel://pecl.php.net/uv-0.2.2"
+        echo "yes" | pecl install uv-beta
     fi
 
 fi
