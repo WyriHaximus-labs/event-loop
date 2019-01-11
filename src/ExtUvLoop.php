@@ -302,10 +302,6 @@ final class ExtUvLoop implements LoopInterface
                 return;
             }
 
-            if ($status !== 0) {
-                $this->pollStream($stream);
-            }
-
             if (isset($this->readStreams[(int) $stream]) && ($events & \UV::READABLE)) {
                 \call_user_func($this->readStreams[(int) $stream], $stream);
             }
