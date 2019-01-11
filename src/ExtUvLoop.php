@@ -111,7 +111,7 @@ final class ExtUvLoop implements LoopInterface
      */
     public function addTimer($interval, $callback)
     {
-        $timer = new Timer( $interval, $callback, false);
+        $timer = new Timer($interval, $callback, false);
 
         $that = $this;
         $timers = $this->timers;
