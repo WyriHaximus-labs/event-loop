@@ -31,7 +31,7 @@ final class ExtUvLoop implements LoopInterface
 
     public function __construct()
     {
-        if (!function_exists('uv_loop_new')) {
+        if (!\function_exists('uv_loop_new')) {
             throw new \BadMethodCallException('Cannot create LibUvLoop, ext-uv extension missing');
         }
 
