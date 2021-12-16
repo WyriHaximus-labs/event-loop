@@ -93,7 +93,6 @@ final class Timers
             }
 
             $timer = $this->timers[$id];
-            \call_user_func($timer->getCallback(), $timer);
 
             // re-schedule if this is a periodic timer and it has not been cancelled explicitly already
             if ($timer->isPeriodic() && isset($this->timers[$id])) {
@@ -102,6 +101,8 @@ final class Timers
             } else {
                 unset($this->timers[$id], $this->schedule[$id]);
             }
+
+            \call_user_func($timer->getCallback(), $timer);
         }
     }
 }
