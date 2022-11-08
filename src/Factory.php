@@ -47,11 +47,6 @@ final class Factory
     private static function construct()
     {
         // @codeCoverageIgnoreStart
-        if (\function_exists('uv_loop_new')) {
-            // only use ext-uv on PHP 7
-            return new ExtUvLoop();
-        }
-
         if (\class_exists('libev\EventLoop', false)) {
             return new ExtLibevLoop();
         }
@@ -62,6 +57,10 @@ final class Factory
 
         if (\class_exists('EventBase', false)) {
             return new ExtEventLoop();
+        }
+
+        if (\function_exists('uv_loop_new')) {
+            return new ExtUvLoop();
         }
 
         if (\function_exists('event_base_new') && \PHP_MAJOR_VERSION === 5) {
