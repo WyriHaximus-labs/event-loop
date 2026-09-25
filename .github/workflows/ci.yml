@@ -9,6 +9,7 @@ jobs:
     name: PHPUnit (PHP ${{ matrix.php }})
     runs-on: ubuntu-26.04
     strategy:
+      fail-fast: false
       matrix:
         php:
           - 8.6
@@ -82,6 +83,7 @@ jobs:
     runs-on: windows-2022
     continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         php:
           - 8.6
